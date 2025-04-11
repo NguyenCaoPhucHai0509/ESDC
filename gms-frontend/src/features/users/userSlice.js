@@ -48,6 +48,25 @@ export const getUserById = createAsyncThunk(
   }
 );
 
+// Create user
+export const createUser = createAsyncThunk(
+  'users/create',
+  async (userData, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return await userService.createUser(userData, token);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 // Update user
 export const updateUser = createAsyncThunk(
   'users/update',
@@ -73,7 +92,46 @@ export const deleteUser = createAsyncThunk(
   async (userId, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
-      return await userService.deleteUser(userId, token);
+      await userService.deleteUser(userId, token);
+      return userId;
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Reset password
+export const resetPassword = createAsyncThunk(
+  'users/resetPassword',
+  async (data, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return await userService.resetPassword(data, token);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Upload avatar
+export const uploadAvatar = createAsyncThunk(
+  'users/uploadAvatar',
+  async ({ userId, formData }, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return await userService.uploadAvatar(userId, formData, token);
     } catch (error) {
       const message =
         (error.response &&
@@ -125,6 +183,19 @@ export const userSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
       })
+      .addCase(createUser.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(createUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.users.push(action.payload);
+      })
+      .addCase(createUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
       .addCase(updateUser.pending, (state) => {
         state.isLoading = true;
       })
@@ -147,10 +218,47 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.users = state.users.filter(
-          (user) => user._id !== action.payload.id
+          (user) => user._id !== action.payload
         );
       })
       .addCase(deleteUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(resetPassword.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(uploadAvatar.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(uploadAvatar.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        // Update avatar for the user in the users array
+        if (state.users.length > 0) {
+          state.users = state.users.map(user => {
+            if (user._id === action.meta.arg.userId) {
+              return { ...user, avatar: action.payload.data.avatar };
+            }
+            return user;
+          });
+        }
+        // Update avatar if the user is the current selected user
+        if (state.user && state.user._id === action.meta.arg.userId) {
+          state.user = { ...state.user, avatar: action.payload.data.avatar };
+        }
+      })
+      .addCase(uploadAvatar.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;

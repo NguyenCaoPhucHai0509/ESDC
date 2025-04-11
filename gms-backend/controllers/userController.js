@@ -1,3 +1,4 @@
+// controllers/userController.js
 const User = require('../models/User');
 const upload = require('../middleware/upload');
 const fs = require('fs');
@@ -34,7 +35,7 @@ exports.getUsers = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -53,16 +54,16 @@ exports.getUser = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Không tìm thấy người dùng'
+        message: 'User not found'
       });
     }
 
-    // Check if receptionist trying to access admin user
+    // Check if receptionist trying to access admin/receptionist user
     if (req.user.role === 'receptionist' && 
         (user.role === 'admin' || user.role === 'receptionist')) {
       return res.status(403).json({
         success: false,
-        message: 'Không có quyền truy cập thông tin này'
+        message: 'Not authorized to access this information'
       });
     }
 
@@ -74,7 +75,7 @@ exports.getUser = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -91,7 +92,7 @@ exports.createUser = async (req, res, next) => {
     if (req.user.role === 'receptionist' && (role === 'admin' || role === 'receptionist')) {
       return res.status(403).json({
         success: false,
-        message: 'Lễ tân chỉ có thể tạo tài khoản khách hàng và huấn luyện viên'
+        message: 'Receptionist can only create customer and trainer accounts'
       });
     }
 
@@ -100,7 +101,7 @@ exports.createUser = async (req, res, next) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'Email đã được sử dụng'
+        message: 'Email already in use'
       });
     }
 
@@ -122,7 +123,7 @@ exports.createUser = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -141,7 +142,7 @@ exports.updateUser = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Không tìm thấy người dùng'
+        message: 'User not found'
       });
     }
 
@@ -150,7 +151,7 @@ exports.updateUser = async (req, res, next) => {
         (user.role === 'admin' || user.role === 'receptionist')) {
       return res.status(403).json({
         success: false,
-        message: 'Không có quyền cập nhật thông tin này'
+        message: 'Not authorized to update this information'
       });
     }
 
@@ -159,7 +160,7 @@ exports.updateUser = async (req, res, next) => {
         (role === 'admin' || role === 'receptionist')) {
       return res.status(403).json({
         success: false,
-        message: 'Không có quyền cập nhật vai trò này'
+        message: 'Not authorized to update to this role'
       });
     }
 
@@ -169,7 +170,7 @@ exports.updateUser = async (req, res, next) => {
       if (existingUser) {
         return res.status(400).json({
           success: false,
-          message: 'Email đã được sử dụng'
+          message: 'Email already in use'
         });
       }
     }
@@ -191,7 +192,7 @@ exports.updateUser = async (req, res, next) => {
       req.params.id,
       updateData,
       { new: true, runValidators: true }
-    );
+    ).select('-password');
 
     res.status(200).json({
       success: true,
@@ -201,7 +202,7 @@ exports.updateUser = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -217,7 +218,7 @@ exports.deleteUser = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Không tìm thấy người dùng'
+        message: 'User not found'
       });
     }
 
@@ -226,7 +227,7 @@ exports.deleteUser = async (req, res, next) => {
         (user.role === 'admin' || user.role === 'receptionist')) {
       return res.status(403).json({
         success: false,
-        message: 'Không có quyền xóa tài khoản này'
+        message: 'Not authorized to delete this account'
       });
     }
 
@@ -248,7 +249,7 @@ exports.deleteUser = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -272,7 +273,7 @@ exports.uploadAvatar = async (req, res, next) => {
       if (!req.file) {
         return res.status(400).json({
           success: false,
-          message: 'Vui lòng upload file'
+          message: 'Please upload a file'
         });
       }
       
@@ -280,7 +281,7 @@ exports.uploadAvatar = async (req, res, next) => {
       if (req.user.id !== req.params.id && req.user.role !== 'admin') {
         return res.status(401).json({
           success: false,
-          message: 'Không được phép thay đổi avatar của người khác'
+          message: 'Not authorized to change another user\'s avatar'
         });
       }
       
@@ -290,7 +291,7 @@ exports.uploadAvatar = async (req, res, next) => {
       if (!user) {
         return res.status(404).json({
           success: false,
-          message: 'Không tìm thấy người dùng'
+          message: 'User not found'
         });
       }
       
@@ -320,39 +321,7 @@ exports.uploadAvatar = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: 'Lỗi server',
-      error: err.message
-    });
-  }
-};
-
-// @desc    Get staff (admin and receptionist)
-// @route   GET /api/users/staff
-// @access  Private/Admin
-exports.getStaff = async (req, res, next) => {
-  try {
-    // Only admin can access this
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Không có quyền truy cập'
-      });
-    }
-    
-    const staff = await User.find({ 
-      role: { $in: ['admin', 'receptionist'] } 
-    }).select('-password');
-
-    res.status(200).json({
-      success: true,
-      count: staff.length,
-      data: staff
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -367,7 +336,7 @@ exports.resetPassword = async (req, res, next) => {
     if (req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        message: 'Không có quyền thực hiện chức năng này'
+        message: 'Not authorized to perform this function'
       });
     }
     
@@ -376,24 +345,24 @@ exports.resetPassword = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Không tìm thấy người dùng'
+        message: 'User not found'
       });
     }
     
-    // Set new password (can be a default or generated one)
+    // Set new password
     const newPassword = req.body.password || '123456';
     user.password = newPassword;
     await user.save();
     
     res.status(200).json({
       success: true,
-      message: 'Đã đặt lại mật khẩu thành công'
+      message: 'Password reset successful'
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }

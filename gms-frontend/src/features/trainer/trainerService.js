@@ -42,43 +42,66 @@ const requestTrainer = async (requestData, token) => {
   return response.data.data;
 };
 
-// Thêm vào file trainerService.js đã tạo ở trên
-
 // Get trainer requests
 const getTrainerRequests = async (token) => {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-  
-    const response = await axios.get(API_URL + 'requests', config);
-    return response.data.data;
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   };
-  
-  // Respond to trainer request
-  const respondToRequest = async (responseData, token) => {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-  
-    const response = await axios.put(
-      API_URL + 'respond/' + responseData.requestId,
-      { accept: responseData.status === 'accepted' },
-      config
-    );
-    return response.data.data;
+
+  const response = await axios.get(API_URL + 'requests', config);
+  return response.data.data;
+};
+
+// Respond to trainer request
+const respondToRequest = async (responseData, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   };
-  
-  // Cập nhật object trainerService để export
-  const trainerService = {
-    getTrainers,
-    getTrainerById,
-    requestTrainer,
-    getTrainerRequests,
-    respondToRequest
+
+  const response = await axios.put(
+    API_URL + 'respond/' + responseData.requestId,
+    { status: responseData.status },
+    config
+  );
+  return response.data.data;
+};
+
+// Get trainer customers
+const getTrainerCustomers = async (token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   };
+
+  const response = await axios.get(API_URL + 'customers', config);
+  return response.data.data;
+};
+
+// Disconnect from trainer (for customers)
+const disconnectTrainer = async (token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  const response = await axios.delete(API_URL + 'disconnect', config);
+  return response.data;
+};
+
+const trainerService = {
+  getTrainers,
+  getTrainerById,
+  requestTrainer,
+  getTrainerRequests,
+  respondToRequest,
+  getTrainerCustomers,
+  disconnectTrainer
+};
 
 export default trainerService;

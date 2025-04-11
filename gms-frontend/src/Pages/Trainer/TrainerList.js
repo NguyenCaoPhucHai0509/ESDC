@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getTrainers } from '../../features/trainer/trainerSlice';
+import { requestTrainer } from '../../features/trainer/trainerSlice';
 import { getRatings } from '../../features/rating/ratingSlice';
 import Modal from '../../Components/Modal/modal';
+import { toast } from 'react-toastify'; // Add toast notifications
 
 const TrainerList = () => {
   const [selectedTrainer, setSelectedTrainer] = useState(null);
@@ -13,6 +15,7 @@ const TrainerList = () => {
   const dispatch = useDispatch();
   const { trainers, isLoading } = useSelector(state => state.trainers || {});
   const { ratings } = useSelector(state => state.ratings || {});
+  const { user } = useSelector(state => state.auth);
   
   useEffect(() => {
     dispatch(getTrainers());
@@ -23,17 +26,22 @@ const TrainerList = () => {
     dispatch(getRatings(trainer._id));
   };
   
-  // const handleRequestSubmit = () => {
-  //   if (selectedTrainer) {
-  //     dispatch(requestTrainer({
-  //       trainerId: selectedTrainer._id,
-  //       message: requestMessage
-  //     }));
-  //     setShowRequestModal(false);
-  //     setRequestMessage('');
-  //     alert('Yêu cầu của bạn đã được gửi đến huấn luyện viên!');
-  //   }
-  // };
+  const handleRequestSubmit = () => {
+    if (selectedTrainer) {
+      dispatch(requestTrainer({
+        trainerId: selectedTrainer._id,
+        message: requestMessage
+      })).then((result) => {
+        if (result.meta.requestStatus === 'fulfilled') {
+          toast.success('Your request has been sent to the trainer');
+          setShowRequestModal(false);
+          setRequestMessage('');
+        } else {
+          toast.error('Failed to send request. Please try again.');
+        }
+      });
+    }
+  };
   
   const filteredTrainers = trainers 
     ? trainers.filter(trainer => 
@@ -44,18 +52,18 @@ const TrainerList = () => {
   
   const RequestForm = () => (
     <div className="p-4">
-      <h3 className="text-lg font-medium mb-4">Gửi yêu cầu đến huấn luyện viên</h3>
+      <h3 className="text-lg font-medium mb-4">Send request to trainer</h3>
       <div className="mb-4">
-        <p className="text-gray-700">Huấn luyện viên: <strong>{selectedTrainer?.fullName}</strong></p>
+        <p className="text-gray-700">Trainer: <strong>{selectedTrainer?.fullName}</strong></p>
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Lời nhắn</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
         <textarea
           value={requestMessage}
           onChange={(e) => setRequestMessage(e.target.value)}
           rows="4"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          placeholder="Nhập lời nhắn của bạn cho huấn luyện viên"
+          placeholder="Enter your message for the trainer"
         ></textarea>
       </div>
       <div className="flex justify-end">
@@ -64,15 +72,15 @@ const TrainerList = () => {
           onClick={() => setShowRequestModal(false)}
           className="mr-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
         >
-          Hủy
+          Cancel
         </button>
         <button
           type="button"
-          // onClick={handleRequestSubmit}
+          onClick={handleRequestSubmit}
           className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           disabled={!requestMessage.trim()}
         >
-          Gửi yêu cầu
+          Send Request
         </button>
       </div>
     </div>
@@ -80,12 +88,12 @@ const TrainerList = () => {
   
   return (
     <div className="ml-[25%] p-5 w-[75%]">
-      <h1 className="text-2xl font-bold mb-6">Danh sách huấn luyện viên</h1>
+      <h1 className="text-2xl font-bold mb-6">Trainer List</h1>
       
       <div className="mb-6">
         <input
           type="text"
-          placeholder="Tìm kiếm theo tên hoặc chuyên môn..."
+          placeholder="Search by name or specialization..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
@@ -96,7 +104,7 @@ const TrainerList = () => {
         <div className="w-full md:w-1/2">
           {isLoading ? (
             <div className="flex justify-center items-center h-40">
-              <p>Đang tải...</p>
+              <p>Loading...</p>
             </div>
           ) : filteredTrainers && filteredTrainers.length > 0 ? (
             <div className="space-y-4">
@@ -131,7 +139,7 @@ const TrainerList = () => {
                         <p className="text-gray-600">{trainer.specialization}</p>
                       )}
                       <div className="flex items-center text-sm mt-1">
-                        <span className="mr-1">Đánh giá:</span>
+                        <span className="mr-1">Rating:</span>
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
                             <svg 
@@ -159,7 +167,7 @@ const TrainerList = () => {
             </div>
           ) : (
             <div className="border rounded-lg p-6 text-center text-gray-500">
-              Không tìm thấy huấn luyện viên phù hợp
+              No trainers found matching your search
             </div>
           )}
         </div>
@@ -174,35 +182,35 @@ const TrainerList = () => {
               <div className="p-6 space-y-4">
                 {selectedTrainer.bio && (
                   <div>
-                    <h3 className="font-medium text-gray-700 mb-1">Giới thiệu</h3>
+                    <h3 className="font-medium text-gray-700 mb-1">About</h3>
                     <p className="text-gray-600">{selectedTrainer.bio}</p>
                   </div>
                 )}
                 
                 <div>
-                  <h3 className="font-medium text-gray-700 mb-1">Thông tin liên hệ</h3>
+                  <h3 className="font-medium text-gray-700 mb-1">Contact Information</h3>
                   <p className="text-gray-600">Email: {selectedTrainer.email}</p>
                   {selectedTrainer.phoneNumber && (
-                    <p className="text-gray-600">SĐT: {selectedTrainer.phoneNumber}</p>
+                    <p className="text-gray-600">Phone: {selectedTrainer.phoneNumber}</p>
                   )}
                 </div>
                 
                 {selectedTrainer.specialization && (
                   <div>
-                    <h3 className="font-medium text-gray-700 mb-1">Chuyên môn</h3>
+                    <h3 className="font-medium text-gray-700 mb-1">Specialization</h3>
                     <p className="text-gray-600">{selectedTrainer.specialization}</p>
                   </div>
                 )}
                 
                 {selectedTrainer.experience && (
                   <div>
-                    <h3 className="font-medium text-gray-700 mb-1">Kinh nghiệm</h3>
-                    <p className="text-gray-600">{selectedTrainer.experience} năm</p>
+                    <h3 className="font-medium text-gray-700 mb-1">Experience</h3>
+                    <p className="text-gray-600">{selectedTrainer.experience} years</p>
                   </div>
                 )}
                 
                 <div>
-                  <h3 className="font-medium text-gray-700 mb-1">Đánh giá từ khách hàng</h3>
+                  <h3 className="font-medium text-gray-700 mb-1">Customer Reviews</h3>
                   {ratings && ratings.length > 0 ? (
                     <div className="space-y-3 max-h-60 overflow-y-auto">
                       {ratings.map(rating => (
@@ -240,35 +248,17 @@ const TrainerList = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500">Chưa có đánh giá nào</p>
+                    <p className="text-gray-500">No reviews yet</p>
                   )}
                 </div>
                 
-                <button
-                  onClick={() => setShowRequestModal(true)}
-                  className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-200"
-                >
-                  Yêu cầu huấn luyện
-                </button>
+                {user && user.role === 'customer' && (
+                  <button
+                    onClick={() => setShowRequestModal(true)}
+                    className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-200"
+                  >
+                    Request Training
+                  </button>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="border rounded-lg p-6 flex items-center justify-center h-64 text-gray-500">
-              Chọn một huấn luyện viên để xem thông tin chi tiết
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {showRequestModal && (
-        <Modal 
-          header="Yêu cầu huấn luyện" 
-          content={<RequestForm />} 
-          handleClose={() => setShowRequestModal(false)} 
-        />
-      )}
-    </div>
-  );
-};
-
-export default TrainerList;

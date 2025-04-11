@@ -1,16 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getTrainerRequests, respondToRequest } from '../../features/trainer/trainerSlice';
+import { toast } from 'react-toastify'; // Add toast notifications for user feedback
 
 const TrainerRequests = () => {
   const [filter, setFilter] = useState('pending'); // 'all', 'pending', 'accepted', 'rejected'
   
   const dispatch = useDispatch();
-  const { trainerRequests, isLoading } = useSelector(state => state.trainers || {});
+  const { trainerRequests, isLoading, isSuccess, isError, message } = useSelector(state => state.trainers || {});
   
   useEffect(() => {
     dispatch(getTrainerRequests());
   }, [dispatch]);
+  
+  // Effect to handle success/error notifications
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success('Request status updated successfully');
+    }
+    
+    if (isError) {
+      toast.error(message || 'Error updating request status');
+    }
+  }, [isSuccess, isError, message]);
   
   const handleRespond = (requestId, status) => {
     dispatch(respondToRequest({ requestId, status }));
@@ -22,7 +34,7 @@ const TrainerRequests = () => {
   
   return (
     <div className="ml-[25%] p-5 w-[75%]">
-      <h1 className="text-2xl font-bold mb-6">Yêu cầu huấn luyện</h1>
+      <h1 className="text-2xl font-bold mb-6">Training Requests</h1>
       
       <div className="bg-white p-4 rounded-lg shadow mb-6">
         <div className="flex space-x-4">
@@ -30,36 +42,36 @@ const TrainerRequests = () => {
             className={`px-4 py-2 rounded-md ${filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
             onClick={() => setFilter('all')}
           >
-            Tất cả
+            All
           </button>
           <button
             className={`px-4 py-2 rounded-md ${filter === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-200'}`}
             onClick={() => setFilter('pending')}
           >
-            Chờ xử lý
+            Pending
           </button>
           <button
             className={`px-4 py-2 rounded-md ${filter === 'accepted' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
             onClick={() => setFilter('accepted')}
           >
-            Đã chấp nhận
+            Accepted
           </button>
           <button
             className={`px-4 py-2 rounded-md ${filter === 'rejected' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
             onClick={() => setFilter('rejected')}
           >
-            Đã từ chối
+            Rejected
           </button>
         </div>
       </div>
       
       {isLoading ? (
         <div className="text-center py-10">
-          <p>Đang tải...</p>
+          <p>Loading...</p>
         </div>
       ) : filteredRequests.length === 0 ? (
         <div className="text-center py-10 bg-white rounded-lg shadow">
-          <p className="text-gray-500">Không có yêu cầu nào</p>
+          <p className="text-gray-500">No requests found</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -83,6 +95,9 @@ const TrainerRequests = () => {
                 <div>
                   <h3 className="font-semibold">{request.customer.fullName}</h3>
                   <p className="text-sm text-gray-500">{request.customer.email}</p>
+                  {request.customer.phoneNumber && (
+                    <p className="text-sm text-gray-500">Phone: {request.customer.phoneNumber}</p>
+                  )}
                 </div>
                 
                 <div className="ml-auto">
@@ -96,20 +111,21 @@ const TrainerRequests = () => {
                     }`}
                   >
                     {request.status === 'pending' 
-                      ? 'Chờ xử lý' 
+                      ? 'Pending' 
                       : request.status === 'accepted' 
-                        ? 'Đã chấp nhận' 
-                        : 'Đã từ chối'}
+                        ? 'Accepted' 
+                        : 'Rejected'}
                   </span>
                 </div>
               </div>
               
               <div className="p-3 bg-gray-50 rounded mb-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Customer's message:</h4>
                 <p>{request.message}</p>
               </div>
               
               <div className="text-sm text-gray-500 mb-4">
-                Yêu cầu lúc: {new Date(request.createdAt).toLocaleString()}
+                Request received: {new Date(request.createdAt).toLocaleString()}
               </div>
               
               {request.status === 'pending' && (
@@ -118,13 +134,13 @@ const TrainerRequests = () => {
                     onClick={() => handleRespond(request._id, 'accepted')}
                     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                   >
-                    Chấp nhận
+                    Accept
                   </button>
                   <button
                     onClick={() => handleRespond(request._id, 'rejected')}
                     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                   >
-                    Từ chối
+                    Reject
                   </button>
                 </div>
               )}

@@ -15,7 +15,7 @@ exports.protect = async (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Không được phép truy cập vào route này, vui lòng đăng nhập'
+      message: 'Not authorized to access this route, please login'
     });
   }
 
@@ -30,7 +30,7 @@ exports.protect = async (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Người dùng không tồn tại'
+        message: 'User does not exist'
       });
     }
 
@@ -42,20 +42,20 @@ exports.protect = async (req, res, next) => {
     if (err.name === 'JsonWebTokenError') {
       return res.status(401).json({
         success: false,
-        message: 'Token không hợp lệ'
+        message: 'Invalid token'
       });
     }
     
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
-        message: 'Token đã hết hạn, vui lòng đăng nhập lại'
+        message: 'Token expired, please login again'
       });
     }
     
     return res.status(401).json({
       success: false,
-      message: 'Không được phép truy cập vào route này'
+      message: 'Not authorized to access this route'
     });
   }
 };
@@ -66,7 +66,7 @@ exports.authorize = (...roles) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Vui lòng đăng nhập trước'
+        message: 'Please login first'
       });
     }
     
@@ -74,7 +74,7 @@ exports.authorize = (...roles) => {
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: `Role ${req.user.role} không được phép thực hiện hành động này`
+        message: `Role ${req.user.role} is not authorized to perform this action`
       });
     }
     

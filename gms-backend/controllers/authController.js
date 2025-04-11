@@ -33,35 +33,35 @@ exports.register = async (req, res, next) => {
   try {
     const { fullName, email, password, phoneNumber, address, role } = req.body;
 
-    // Kiểm tra quyền tạo tài khoản
+    // Check permission for creating account
     if (req.user) {
-      // Nếu không phải admin và muốn tạo tài khoản admin
+      // If not admin and wants to create an admin account
       if (req.user.role !== 'admin' && role === 'admin') {
         return res.status(403).json({
           success: false,
-          message: 'Chỉ có admin mới có thể tạo tài khoản admin khác'
+          message: 'Only admin can create other admin accounts'
         });
       }
       
-      // Nếu là lễ tân và muốn tạo tài khoản không phải customer hoặc trainer
+      // If receptionist and wants to create an account other than customer or trainer
       if (req.user.role === 'receptionist' && (role === 'admin' || role === 'receptionist')) {
         return res.status(403).json({
           success: false,
-          message: 'Lễ tân chỉ có thể tạo tài khoản khách hàng và huấn luyện viên'
+          message: 'Receptionist can only create customer and trainer accounts'
         });
       }
     }
 
-    // Kiểm tra email đã tồn tại chưa
+    // Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'Email đã được sử dụng'
+        message: 'Email already in use'
       });
     }
 
-    // Tạo tài khoản
+    // Create account
     const user = await User.create({
       fullName,
       email,
@@ -76,7 +76,7 @@ exports.register = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false, 
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -93,7 +93,7 @@ exports.login = async (req, res, next) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Vui lòng cung cấp email và mật khẩu'
+        message: 'Please provide email and password'
       });
     }
 
@@ -103,7 +103,7 @@ exports.login = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Thông tin đăng nhập không hợp lệ'
+        message: 'Invalid credentials'
       });
     }
 
@@ -113,7 +113,7 @@ exports.login = async (req, res, next) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Thông tin đăng nhập không hợp lệ'
+        message: 'Invalid credentials'
       });
     }
 
@@ -122,7 +122,7 @@ exports.login = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false, 
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -145,7 +145,7 @@ exports.getMe = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false, 
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -164,7 +164,7 @@ exports.logout = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false, 
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -201,7 +201,7 @@ exports.updateProfile = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false, 
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -218,7 +218,7 @@ exports.changePassword = async (req, res, next) => {
     if (!(await user.matchPassword(req.body.currentPassword))) {
       return res.status(401).json({
         success: false,
-        message: 'Mật khẩu hiện tại không đúng'
+        message: 'Current password is incorrect'
       });
     }
 
@@ -230,7 +230,7 @@ exports.changePassword = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false, 
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
@@ -244,7 +244,7 @@ exports.uploadAvatar = async (req, res, next) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: 'Vui lòng chọn ảnh đại diện'
+        message: 'Please select an avatar image'
       });
     }
 
@@ -264,7 +264,7 @@ exports.uploadAvatar = async (req, res, next) => {
     console.error(err);
     res.status(500).json({
       success: false, 
-      message: 'Lỗi server',
+      message: 'Server error',
       error: err.message
     });
   }
