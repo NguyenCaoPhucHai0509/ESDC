@@ -17,7 +17,11 @@ const sendTokenResponse = (user, statusCode, res) => {
       role: user.role,
       avatar: user.avatar,
       phoneNumber: user.phoneNumber,
-      address: user.address
+      address: user.address,
+      trainer: user.trainer,
+      specialization: user.specialization,
+      experience: user.experience,
+      bio: user.bio
     }
   });
 };
@@ -30,7 +34,7 @@ exports.register = async (req, res, next) => {
     const { fullName, email, password, phoneNumber, address, role } = req.body;
 
     // Kiểm tra quyền tạo tài khoản
-    if (req.user && role) {
+    if (req.user) {
       // Nếu không phải admin và muốn tạo tài khoản admin
       if (req.user.role !== 'admin' && role === 'admin') {
         return res.status(403).json({
@@ -40,7 +44,7 @@ exports.register = async (req, res, next) => {
       }
       
       // Nếu là lễ tân và muốn tạo tài khoản không phải customer hoặc trainer
-      if (req.user.role === 'receptionist' && role !== 'customer' && role !== 'trainer') {
+      if (req.user.role === 'receptionist' && (role === 'admin' || role === 'receptionist')) {
         return res.status(403).json({
           success: false,
           message: 'Lễ tân chỉ có thể tạo tài khoản khách hàng và huấn luyện viên'
@@ -69,7 +73,12 @@ exports.register = async (req, res, next) => {
 
     sendTokenResponse(user, 201, res);
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({
+      success: false, 
+      message: 'Lỗi server',
+      error: err.message
+    });
   }
 };
 
@@ -110,7 +119,12 @@ exports.login = async (req, res, next) => {
 
     sendTokenResponse(user, 200, res);
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({
+      success: false, 
+      message: 'Lỗi server',
+      error: err.message
+    });
   }
 };
 
@@ -119,14 +133,21 @@ exports.login = async (req, res, next) => {
 // @access  Private
 exports.getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id)
+      .populate('trainer', 'fullName email avatar phoneNumber specialization experience bio')
+      .populate('membershipInfo.type');
 
     res.status(200).json({
       success: true,
       data: user
     });
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({
+      success: false, 
+      message: 'Lỗi server',
+      error: err.message
+    });
   }
 };
 
@@ -140,7 +161,12 @@ exports.logout = async (req, res, next) => {
       data: {}
     });
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({
+      success: false, 
+      message: 'Lỗi server',
+      error: err.message
+    });
   }
 };
 
@@ -155,6 +181,13 @@ exports.updateProfile = async (req, res, next) => {
       address: req.body.address
     };
 
+    // If user is trainer, update trainer specific fields
+    if (req.user.role === 'trainer') {
+      if (req.body.specialization) fieldsToUpdate.specialization = req.body.specialization;
+      if (req.body.experience) fieldsToUpdate.experience = req.body.experience;
+      if (req.body.bio) fieldsToUpdate.bio = req.body.bio;
+    }
+
     const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
       new: true,
       runValidators: true
@@ -165,7 +198,12 @@ exports.updateProfile = async (req, res, next) => {
       data: user
     });
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({
+      success: false, 
+      message: 'Lỗi server',
+      error: err.message
+    });
   }
 };
 
@@ -189,6 +227,45 @@ exports.changePassword = async (req, res, next) => {
 
     sendTokenResponse(user, 200, res);
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({
+      success: false, 
+      message: 'Lỗi server',
+      error: err.message
+    });
+  }
+};
+
+// @desc    Upload avatar
+// @route   PUT /api/auth/avatar
+// @access  Private
+exports.uploadAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng chọn ảnh đại diện'
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatar: req.file.filename },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        avatar: user.avatar
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false, 
+      message: 'Lỗi server',
+      error: err.message
+    });
   }
 };

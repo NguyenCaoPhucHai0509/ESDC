@@ -23,17 +23,17 @@ const TrainerList = () => {
     dispatch(getRatings(trainer._id));
   };
   
-  const handleRequestSubmit = () => {
-    if (selectedTrainer) {
-      dispatch(requestTrainer({
-        trainerId: selectedTrainer._id,
-        message: requestMessage
-      }));
-      setShowRequestModal(false);
-      setRequestMessage('');
-      alert('Yêu cầu của bạn đã được gửi đến huấn luyện viên!');
-    }
-  };
+  // const handleRequestSubmit = () => {
+  //   if (selectedTrainer) {
+  //     dispatch(requestTrainer({
+  //       trainerId: selectedTrainer._id,
+  //       message: requestMessage
+  //     }));
+  //     setShowRequestModal(false);
+  //     setRequestMessage('');
+  //     alert('Yêu cầu của bạn đã được gửi đến huấn luyện viên!');
+  //   }
+  // };
   
   const filteredTrainers = trainers 
     ? trainers.filter(trainer => 
@@ -68,7 +68,7 @@ const TrainerList = () => {
         </button>
         <button
           type="button"
-          onClick={handleRequestSubmit}
+          // onClick={handleRequestSubmit}
           className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           disabled={!requestMessage.trim()}
         >
