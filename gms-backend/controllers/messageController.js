@@ -36,6 +36,41 @@ exports.getMessages = async (req, res, next) => {
   }
 };
 
+
+// ...các hàm khác...
+
+// @desc    Delete a message
+// @route   DELETE /api/messages/:id
+// @access  Private
+exports.deleteMessage = async (req, res, next) => {
+  try {
+    const message = await Message.findById(req.params.id);
+
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy tin nhắn'
+      });
+    }
+
+    // Kiểm tra xem người dùng có quyền xóa tin nhắn không
+    if (message.sender.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Bạn không có quyền xóa tin nhắn này'
+      });
+    }
+
+    await message.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 // @desc    Send a message
 // @route   POST /api/messages
 // @access  Private

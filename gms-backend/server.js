@@ -72,7 +72,7 @@ app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/conversations', require('./routes/conversationRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/ratings', require('./routes/ratingRoutes'));
-app.use('/api/trainers', require('./routes/trainerRoutes'));
+app.use('/api/trainers', require('./routes/trainerRoutes')); // Thêm route mới
 
 // Basic route
 app.get('/', (req, res) => {

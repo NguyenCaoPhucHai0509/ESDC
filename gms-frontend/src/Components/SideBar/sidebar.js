@@ -9,6 +9,8 @@ import EventIcon from '@mui/icons-material/Event';
 import ChatIcon from '@mui/icons-material/Chat';
 import BuildIcon from '@mui/icons-material/Build';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/auth/authSlice';
@@ -41,7 +43,11 @@ const Sidebar = () => {
         <div>
           <div className='text-3xl'>Xin chào!</div>
           <div className='text-xl mt-1 font-semibold'>{user?.fullName || 'Quản lí'}</div>
-          <div className='text-sm text-gray-400'>{user?.role || 'admin'}</div>
+          <div className='text-sm text-gray-400'>{
+            user?.role === 'admin' ? 'Quản lý' : 
+            user?.role === 'receptionist' ? 'Lễ tân' : 
+            user?.role === 'trainer' ? 'Huấn luyện viên' : 'Khách hàng'
+          }</div>
           <div className='mt-2'>
             <button 
               className='flex items-center gap-1 bg-gray-600 hover:bg-red-700 text-white px-2 py-1 rounded-md transition-colors' 
@@ -74,10 +80,24 @@ const Sidebar = () => {
           </Link>
         )}
 
-        {(user?.role === 'admin' || user?.role === 'trainer') && (
-          <Link to='/trainer' className={`flex gap-8 mt-5 text white font-semibold text-xl bg-slate-700 p-3 rounded-xl cursor-pointer hover:bg-white hover:text-black ${location.pathname==="/trainer" ? 'border-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500' : null}`}>
-            <div><PersonIcon/> </div>
-            <div>Huấn luyện viên</div>
+        {user?.role === 'admin' && (
+          <Link to='/staff-management' className={`flex gap-8 mt-5 text white font-semibold text-xl bg-slate-700 p-3 rounded-xl cursor-pointer hover:bg-white hover:text-black ${location.pathname==="/staff-management" ? 'border-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500' : null}`}>
+            <div><SupervisorAccountIcon/> </div>
+            <div>Quản lý nhân viên</div>
+          </Link>
+        )}
+
+        {/* Link Huấn luyện viên cho Customer và Admin/Receptionist */}
+        <Link to='/trainers' className={`flex gap-8 mt-5 text white font-semibold text-xl bg-slate-700 p-3 rounded-xl cursor-pointer hover:bg-white hover:text-black ${location.pathname==="/trainers" ? 'border-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500' : null}`}>
+          <div><PersonIcon/> </div>
+          <div>Huấn luyện viên</div>
+        </Link>
+        
+        {/* Yêu cầu huấn luyện dành cho Trainer */}
+        {user?.role === 'trainer' && (
+          <Link to='/trainer-requests' className={`flex gap-8 mt-5 text white font-semibold text-xl bg-slate-700 p-3 rounded-xl cursor-pointer hover:bg-white hover:text-black ${location.pathname==="/trainer-requests" ? 'border-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500' : null}`}>
+            <div><NotificationsIcon/> </div>
+            <div>Yêu cầu huấn luyện</div>
           </Link>
         )}
         

@@ -8,11 +8,14 @@ import Membership from './Pages/Membership/MembershipPage';
 import Equipment from './Pages/Equipment/EquipmentPage';
 import Events from './Pages/Events/EventsPage';
 import Profile from './Pages/Profile/ProfilePage';
+import TrainerList from './Pages/Trainer/TrainerList';
+import TrainerRequests from './Pages/Trainer/TrainerRequests';
+import StaffManagement from './Pages/Admin/StaffManagement';
 
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux'; 
-import { Provider } from 'react-redux';
-import { store } from './app/store';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { getUsers } from './features/users/userSlice';
 
 // Private route component
 const PrivateRoute = ({ children, roles = [] }) => {
@@ -32,6 +35,14 @@ const PrivateRoute = ({ children, roles = [] }) => {
 
 function App() {
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (user) {
+      dispatch(getUsers());
+    }
+  }, [user, dispatch]);
 
   return (
     <div className="flex">
@@ -65,16 +76,8 @@ function App() {
         <Route 
           path='/membership' 
           element={
-            <PrivateRoute roles={['admin', 'receptionist']}>
+            <PrivateRoute>
               <Membership />
-            </PrivateRoute>
-          } 
-        />
-        <Route 
-          path='/equipment' 
-          element={
-            <PrivateRoute roles={['admin']}>
-              <Equipment />
             </PrivateRoute>
           } 
         />
@@ -94,16 +97,33 @@ function App() {
             </PrivateRoute>
           } 
         />
+        <Route 
+          path='/trainers' 
+          element={
+            <PrivateRoute>
+              <TrainerList />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path='/trainer-requests' 
+          element={
+            <PrivateRoute roles={['trainer']}>
+              <TrainerRequests />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path='/staff-management' 
+          element={
+            <PrivateRoute roles={['admin']}>
+              <StaffManagement />
+            </PrivateRoute>
+          } 
+        />
       </Routes>
     </div>
   );
 }
 
-// Wrap with Provider
-const AppWithRedux = () => (
-  <Provider store={store}>
-    <App />
-  </Provider>
-);
-
-export default AppWithRedux;
+export default App;

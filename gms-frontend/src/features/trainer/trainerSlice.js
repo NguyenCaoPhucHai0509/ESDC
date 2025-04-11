@@ -4,6 +4,7 @@ import trainerService from './trainerService';
 const initialState = {
   trainers: [],
   trainer: null,
+  trainerRequests: [],
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -67,6 +68,44 @@ export const requestTrainer = createAsyncThunk(
   }
 );
 
+// Get trainer requests
+export const getTrainerRequests = createAsyncThunk(
+  'trainers/getRequests',
+  async (_, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return await trainerService.getTrainerRequests(token);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Respond to trainer request
+export const respondToRequest = createAsyncThunk(
+  'trainers/respond',
+  async (responseData, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return await trainerService.respondToRequest(responseData, token);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const trainerSlice = createSlice({
   name: 'trainer',
   initialState,
@@ -114,6 +153,34 @@ export const trainerSlice = createSlice({
         state.isSuccess = true;
       })
       .addCase(requestTrainer.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(getTrainerRequests.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getTrainerRequests.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.trainerRequests = action.payload;
+      })
+      .addCase(getTrainerRequests.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(respondToRequest.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(respondToRequest.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.trainerRequests = state.trainerRequests.map(req => 
+          req._id === action.payload._id ? action.payload : req
+        );
+      })
+      .addCase(respondToRequest.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;

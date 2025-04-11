@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchConversations } from '../../features/conservations/conversationSlice';
+import { fetchConversations, createConversation } from '../../features/conservations/conversationSlice';
 import { fetchMessages, sendMessage } from '../../features/messages/messageSlice';
 import io from 'socket.io-client';
-import { createConversation } from '../../features/conservations/conversationSlice';
+import Modal from '../../Components/Modal/modal';
 
 const ENDPOINT = 'http://localhost:5000';
 let socket;
@@ -15,13 +15,14 @@ const ChatPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
   const [newChatModal, setNewChatModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
-  const [searchUser, setSearchUser] = useState('');
-  const { users } = useSelector((state) => state.users);  
+  
   const dispatch = useDispatch();
   const messagesEndRef = useRef(null);
 
   const { user } = useSelector((state) => state.auth);
+  const { users } = useSelector((state) => state.users);
   const { conversations, isLoading: conversationsLoading } = useSelector((state) => state.conversations);
   const { messages, isLoading: messagesLoading } = useSelector((state) => state.messages);
 
@@ -34,11 +35,18 @@ const ChatPage = () => {
     // Xử lý typing
     socket.on('typing', () => setIsTyping(true));
     socket.on('stop typing', () => setIsTyping(false));
+    
+    // Nhận tin nhắn
+    socket.on('message received', (newMessageReceived) => {
+      if (selectedChat && selectedChat._id === newMessageReceived.conversation) {
+        dispatch(fetchMessages(selectedChat._id));
+      }
+    });
 
     return () => {
       socket.disconnect();
     };
-  }, [user]);
+  }, [user, dispatch, selectedChat]);
 
   useEffect(() => {
     dispatch(fetchConversations());
@@ -95,10 +103,103 @@ const ChatPage = () => {
       setNewMessage('');
     }
   };
+  
+  const handleCreateNewChat = () => {
+    if (selectedUser) {
+      dispatch(createConversation({
+        userId: selectedUser._id
+      })).then((res) => {
+        if (res.payload) {
+          setSelectedChat(res.payload);
+          setNewChatModal(false);
+          setSelectedUser(null);
+        }
+      });
+    }
+  };
+  
+  const filteredUsers = users ? users.filter(u => 
+    u._id !== user._id && 
+    (u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     u.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  ) : [];
+
+  const ChatUserModal = () => (
+    <div className="p-4">
+      <h3 className="text-lg font-medium mb-4">Tạo cuộc trò chuyện mới</h3>
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Tìm kiếm người dùng..."
+          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      <div className="max-h-60 overflow-y-auto mb-4">
+        {filteredUsers.length > 0 ? (
+          filteredUsers.map((user) => (
+            <div
+              key={user._id}
+              className={`p-2 border-b flex items-center cursor-pointer hover:bg-gray-100 ${
+                selectedUser && selectedUser._id === user._id ? 'bg-blue-50' : ''
+              }`}
+              onClick={() => setSelectedUser(user)}
+            >
+              <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                {user.avatar ? (
+                  <img 
+                    src={`http://localhost:5000/uploads/${user.avatar}`} 
+                    alt={user.fullName} 
+                    className="h-full w-full rounded-full object-cover" 
+                  />
+                ) : (
+                  user.fullName.charAt(0)
+                )}
+              </div>
+              <div>
+                <p className="font-medium">{user.fullName}</p>
+                <p className="text-sm text-gray-500">{user.email}</p>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500 py-4">Không tìm thấy người dùng</p>
+        )}
+      </div>
+      <div className="flex justify-end">
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md mr-2"
+          onClick={() => {
+            setNewChatModal(false);
+            setSelectedUser(null);
+          }}
+        >
+          Hủy
+        </button>
+        <button
+          className={`px-4 py-2 bg-blue-500 text-white rounded-md ${!selectedUser ? 'opacity-50 cursor-not-allowed' : ''}`}
+          onClick={handleCreateNewChat}
+          disabled={!selectedUser}
+        >
+          Tạo cuộc trò chuyện
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="ml-[25%] p-5 w-[75%] h-screen">
-      <h1 className="text-2xl font-bold mb-4">Tin nhắn</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Tin nhắn</h1>
+        
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+          onClick={() => setNewChatModal(true)}
+        >
+          Tạo cuộc trò chuyện mới
+        </button>
+      </div>
       
       <div className="flex h-[calc(100vh-7rem)] bg-white rounded-lg shadow-md overflow-hidden">
         {/* Danh sách cuộc trò chuyện */}
@@ -122,7 +223,7 @@ const ChatPage = () => {
               >
                 <h3 className="font-medium">
                   {chat.isGroupChat 
-                    ? chat.chatName 
+                    ? chat.groupName 
                     : chat.participants.find(p => p._id !== user._id)?.fullName}
                 </h3>
                 <p className="text-sm text-gray-500 truncate">
@@ -144,7 +245,7 @@ const ChatPage = () => {
               <div className="p-4 border-b">
                 <h2 className="font-semibold">
                   {selectedChat.isGroupChat 
-                    ? selectedChat.chatName 
+                    ? selectedChat.groupName 
                     : selectedChat.participants.find(p => p._id !== user._id)?.fullName}
                 </h2>
               </div>
@@ -211,6 +312,17 @@ const ChatPage = () => {
           )}
         </div>
       </div>
+      
+      {newChatModal && (
+        <Modal
+          header="Tạo cuộc trò chuyện mới"
+          content={<ChatUserModal />}
+          handleClose={() => {
+            setNewChatModal(false);
+            setSelectedUser(null);
+          }}
+        />
+      )}
     </div>
   );
 };

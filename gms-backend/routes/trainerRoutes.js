@@ -3,18 +3,19 @@ const {
   getTrainers,
   getTrainer,
   updateTrainerProfile,
-  getTrainerCustomers,
   requestTrainer,
-  respondToRequest,
-  getTrainerSchedule,
-  updateTrainerSchedule
+  respondToTrainerRequest,
+  getTrainerRequests,
+  getTrainerCustomers
 } = require('../controllers/trainerController');
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Lấy danh sách và thông tin huấn luyện viên
+// Lấy danh sách huấn luyện viên
 router.get('/', protect, getTrainers);
+
+// Lấy thông tin một huấn luyện viên
 router.get('/:id', protect, getTrainer);
 
 // Cập nhật thông tin huấn luyện viên
@@ -24,11 +25,10 @@ router.put('/profile', protect, authorize('trainer'), updateTrainerProfile);
 router.post('/request/:trainerId', protect, authorize('customer'), requestTrainer);
 
 // Huấn luyện viên phản hồi yêu cầu
-router.put('/respond/:requestId', protect, authorize('trainer'), respondToRequest);
+router.put('/respond/:requestId', protect, authorize('trainer'), respondToTrainerRequest);
 
-// Quản lý lịch trình huấn luyện viên
-router.get('/schedule', protect, authorize('trainer'), getTrainerSchedule);
-router.put('/schedule', protect, authorize('trainer'), updateTrainerSchedule);
+// Lấy danh sách yêu cầu huấn luyện
+router.get('/requests', protect, authorize('trainer'), getTrainerRequests);
 
 // Lấy danh sách khách hàng của huấn luyện viên
 router.get('/customers', protect, authorize('trainer'), getTrainerCustomers);

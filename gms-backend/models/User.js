@@ -54,6 +54,16 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  // Thông tin bổ sung cho huấn luyện viên
+  specialization: {
+    type: String, // Chuyên môn huấn luyện
+  },
+  experience: {
+    type: Number, // Số năm kinh nghiệm
+  },
+  bio: {
+    type: String, // Giới thiệu ngắn
+  },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
   createdAt: {

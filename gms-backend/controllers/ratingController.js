@@ -37,3 +37,20 @@ exports.getTrainerRatings = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Lấy tất cả đánh giá
+// @route   GET /api/ratings
+// @access  Private
+exports.getRatings = async (req, res, next) => {
+  try {
+    const ratings = await Rating.find();
+    
+    res.status(200).json({
+      success: true,
+      count: ratings.length,
+      data: ratings
+    });
+  } catch (error) {
+    next(error);
+  }
+};
