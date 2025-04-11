@@ -1,3 +1,4 @@
+// Trong file gms-frontend/src/features/auth/authService.js
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/auth/';
@@ -44,13 +45,50 @@ const logout = () => {
   localStorage.removeItem('user');
 };
 
-// ... các phương thức khác giữ nguyên
+// Get profile
+const getProfile = async (token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  const response = await axios.get(API_URL + 'me', config);
+  return response.data.data;
+};
+
+// Update profile
+const updateProfile = async (profileData, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+    },
+  };
+
+  const response = await axios.put(API_URL + 'profile', profileData, config);
+  return response.data.data;
+};
+
+// Change password
+const changePassword = async (passwordData, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  const response = await axios.put(API_URL + 'password', passwordData, config);
+  return response.data;
+};
 
 const authService = {
   register,
   login,
   logout,
-  // ... các phương thức khác
+  getProfile,
+  updateProfile,
+  changePassword
 };
 
 export default authService;

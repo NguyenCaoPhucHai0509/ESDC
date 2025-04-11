@@ -1,48 +1,23 @@
 {
   "name": "gms-backend",
   "version": "1.0.0",
-  "main": "server.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "client": "cd ../gms-frontend && npm start",
-    "dev:full": "concurrently \"npm run dev\" \"npm run client\""
+    "start": "nodemon src/index.js"
   },
-  "keywords": [
-    "gym",
-    "management",
-    "mern",
-    "mongodb",
-    "express",
-    "react",
-    "node"
-  ],
   "author": "",
   "license": "ISC",
-  "description": "Backend for Gym Management System",
   "dependencies": {
-    "bcryptjs": "^3.0.2",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^2.2.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "express-mongo-sanitize": "^2.2.0",
-    "express-rate-limit": "^7.2.0",
-    "helmet": "^7.1.0",
-    "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.15.0",
     "mongoose": "^8.13.2",
-    "multer": "^1.4.5-lts.2",
-    "nodemailer": "^6.10.0",
-    "socket.io": "^4.8.1",
-    "xss-clean": "^0.1.4"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2",
     "nodemon": "^3.1.9"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }

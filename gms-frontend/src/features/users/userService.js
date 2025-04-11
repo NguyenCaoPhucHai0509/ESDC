@@ -1,3 +1,4 @@
+// Trong file gms-frontend/src/features/users/userService.js
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/users/';
@@ -59,7 +60,7 @@ const deleteUser = async (userId, token) => {
   };
 
   const response = await axios.delete(API_URL + userId, config);
-  return response.data;
+  return userId; // Trả về ID để xóa khỏi state
 };
 
 // Reset user password

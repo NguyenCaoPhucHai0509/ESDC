@@ -1,3 +1,4 @@
+// Trong file gms-frontend/src/Pages/Member/member.js
 import React, {useState, useEffect} from 'react';
 import AddIcon from '@mui/icons-material/Add'; 
 import CardMembershipIcon from '@mui/icons-material/CardMembership'; 
@@ -6,7 +7,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Link } from 'react-router-dom';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import Membercard from '../../Components/MemberCards/membercards';
 import Modal from '../../Components/Modal/modal';
 import AddmemberShip from '../../Components/Addmembership/addmemberShip';
 import RegisterForm from '../../Components/User/RegisterForm';
@@ -137,7 +137,7 @@ const Member = () => {
         </div>
       </div>  
 
-      {/* Block for back to dashboard */}  
+      // Tiếp tục từ phần trước
       <Link to="/dashboard" className="flex items-center mt-4 text-blue-600 hover:text-blue-800 transition-colors">  
         <KeyboardReturnIcon className="mr-1" />   
         Trở lại trang chủ
@@ -243,6 +243,6 @@ const Member = () => {
       </div>
     </div>  
   );  
-};  
+};
 
 export default Member;

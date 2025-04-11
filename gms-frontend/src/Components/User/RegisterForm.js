@@ -1,3 +1,4 @@
+// Trong file gms-frontend/src/Components/User/RegisterForm.js
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { register } from '../../features/auth/authSlice';
@@ -31,14 +32,14 @@ const RegisterForm = ({ handleClose, editData }) => {
     
     // Validate form
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('Mật khẩu nhập lại không khớp');
       return;
     }
     
     // Check for receptionist attempting to create admin/receptionist
     if (user && user.role === 'receptionist' && 
         (formData.role === 'admin' || formData.role === 'receptionist')) {
-      setError('Receptionist can only create customer and trainer accounts');
+      setError('Lễ tân chỉ có thể tạo tài khoản khách hàng và huấn luyện viên');
       return;
     }
     
@@ -47,7 +48,7 @@ const RegisterForm = ({ handleClose, editData }) => {
     
     // If editing existing user, handle differently
     if (editData) {
-      // Handle edit logic
+      // Xử lý chỉnh sửa người dùng (sẽ thêm sau)
       console.log('Editing user:', userData);
     } else {
       // Register new user
@@ -66,7 +67,7 @@ const RegisterForm = ({ handleClose, editData }) => {
       )}
       
       <div>
-        <label className="block text-sm font-medium text-gray-700">Full Name</label>
+        <label className="block text-sm font-medium text-gray-700">Họ và tên</label>
         <input
           type="text"
           name="fullName"
@@ -91,7 +92,7 @@ const RegisterForm = ({ handleClose, editData }) => {
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-700">Password</label>
+        <label className="block text-sm font-medium text-gray-700">Mật khẩu</label>
         <input
           type="password"
           name="password"
@@ -102,12 +103,12 @@ const RegisterForm = ({ handleClose, editData }) => {
           minLength="6"
         />
         {editData && (
-          <p className="text-xs text-gray-500 mt-1">Leave blank to keep current password</p>
+          <p className="text-xs text-gray-500 mt-1">Để trống nếu không muốn thay đổi mật khẩu</p>
         )}
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+        <label className="block text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
         <input
           type="password"
           name="confirmPassword"
@@ -120,7 +121,7 @@ const RegisterForm = ({ handleClose, editData }) => {
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+        <label className="block text-sm font-medium text-gray-700">Số điện thoại</label>
         <input
           type="text"
           name="phoneNumber"
@@ -131,7 +132,7 @@ const RegisterForm = ({ handleClose, editData }) => {
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-700">Address</label>
+        <label className="block text-sm font-medium text-gray-700">Địa chỉ</label>
         <input
           type="text"
           name="address"
@@ -142,19 +143,19 @@ const RegisterForm = ({ handleClose, editData }) => {
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-700">Role</label>
+        <label className="block text-sm font-medium text-gray-700">Vai trò</label>
         <select
           name="role"
           value={formData.role}
           onChange={handleChange}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
         >
-          <option value="customer">Customer</option>
-          <option value="trainer">Trainer</option>
+          <option value="customer">Khách hàng</option>
+          <option value="trainer">Huấn luyện viên</option>
           {user && user.role === 'admin' && (
             <>
-              <option value="receptionist">Receptionist</option>
-              <option value="admin">Admin</option>
+              <option value="receptionist">Lễ tân</option>
+              <option value="admin">Quản lý</option>
             </>
           )}
         </select>
@@ -166,14 +167,14 @@ const RegisterForm = ({ handleClose, editData }) => {
           onClick={handleClose}
           className="mr-3 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
         >
-          Cancel
+          Hủy
         </button>
         <button
           type="submit"
           className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           disabled={isLoading}
         >
-          {isLoading ? 'Processing...' : editData ? 'Update' : 'Register'}
+          {isLoading ? 'Đang xử lý...' : editData ? 'Cập nhật' : 'Đăng ký'}
         </button>
       </div>
     </form>

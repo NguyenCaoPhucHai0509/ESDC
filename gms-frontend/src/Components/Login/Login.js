@@ -1,3 +1,4 @@
+// Trong file gms-frontend/src/Components/Login/Login.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -48,7 +49,7 @@ const Login = () => {
   return (
     <div className='w-full bg-cover flex items-center justify-center h-[calc(100vh-4rem)] bg-[url("https://wallpapercat.com/w/full/4/3/c/874414-1920x1080-desktop-1080p-gym-wallpaper-photo.jpg")]'>
       <div className='w-1/3 p-10 bg-gray-50 bg-opacity-50'>  
-        <div className="font-sans text-white text-center text-3xl">Đăng nhập</div>  
+        <div className="font-sans text-black text-center text-3xl">Đăng nhập</div>  
         
         {isError && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
           <span className="font-bold">Lỗi: </span>
